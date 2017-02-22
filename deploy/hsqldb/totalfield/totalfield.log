@@ -1,0 +1,880 @@
+/*C2*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C3*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C4*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C5*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C6*/SET SCHEMA PUBLIC
+create table SYS_DB_CHANGELOG (SCRIPT_NAME varchar(300) not null primary key, CREATE_TS timestamp default current_timestamp, IS_INIT integer default 0)
+------------------------------------------------------------------------------------------------------------\u000a-- table for selecting sequence values in HSQL\u000acreate table DUAL (ID integer)
+INSERT INTO DUAL VALUES(0)
+COMMIT
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SYS_SERVER (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    --\u000a    NAME varchar(255),\u000a    IS_RUNNING boolean,\u000a    DATA longvarchar,\u000a    --\u000a    primary key (ID),\u000a    constraint IDX_SYS_SERVER_UNIQ_NAME unique (NAME)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SYS_CONFIG (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    --\u000a    NAME varchar(255),\u000a    VALUE longvarchar,\u000a    --\u000a    primary key (ID),\u000a    constraint IDX_SYS_CONFIG_UNIQ_NAME unique (NAME)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SYS_FILE (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    NAME varchar(500) not null,\u000a    EXT varchar(20),\u000a    FILE_SIZE bigint,\u000a    CREATE_DATE timestamp,\u000a    --\u000a    primary key (ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SYS_LOCK_CONFIG (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    --\u000a    NAME varchar(100),\u000a    TIMEOUT_SEC integer,\u000a    --\u000a    primary key (ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SYS_ENTITY_STATISTICS (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    --\u000a    NAME varchar(50),\u000a    INSTANCE_COUNT bigint,\u000a    FETCH_UI integer,\u000a    MAX_FETCH_UI integer,\u000a    LAZY_COLLECTION_THRESHOLD integer,\u000a    LOOKUP_SCREEN_THRESHOLD integer,\u000a    --\u000a    primary key (ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SYS_SCHEDULED_TASK (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    BEAN_NAME varchar(50),\u000a    METHOD_NAME varchar(50),\u000a    METHOD_PARAMS varchar(1000),\u000a    DEFINED_BY varchar(1) default 'B',\u000a    CLASS_NAME varchar(500),\u000a    SCRIPT_NAME varchar(500),\u000a    USER_NAME varchar(50),\u000a    IS_SINGLETON boolean,\u000a    IS_ACTIVE boolean,\u000a    PERIOD integer,\u000a    TIMEOUT integer,\u000a    START_DATE timestamp,\u000a    TIME_FRAME integer,\u000a    START_DELAY integer,\u000a    PERMITTED_SERVERS varchar(4096),\u000a    LOG_START boolean,\u000a    LOG_FINISH boolean,\u000a    LAST_START_TIME timestamp,\u000a    LAST_START_SERVER varchar(512),\u000a    DESCRIPTION varchar(1000),\u000a    CRON varchar(100),\u000a    SCHEDULING_TYPE varchar(1) default 'P',\u000a    --\u000a    primary key (ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SYS_SCHEDULED_EXECUTION (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    --\u000a    TASK_ID varchar(36),\u000a    SERVER varchar(512),\u000a    START_TIME timestamp,\u000a    FINISH_TIME timestamp,\u000a    RESULT longvarchar,\u000a    --\u000a    primary key (ID),\u000a    constraint SYS_SCHEDULED_EXECUTION_TASK foreign key (TASK_ID) references SYS_SCHEDULED_TASK(ID)\u000a)
+\u000acreate index IDX_SYS_SCHEDULED_EXECUTION_TASK_START_TIME  on SYS_SCHEDULED_EXECUTION (TASK_ID, START_TIME)
+\u000acreate index IDX_SYS_SCHEDULED_EXECUTION_TASK_FINISH_TIME on SYS_SCHEDULED_EXECUTION (TASK_ID, FINISH_TIME)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_ROLE (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    NAME varchar(255) not null,\u000a    LOC_NAME varchar(255),\u000a    DESCRIPTION varchar(1000),\u000a    IS_DEFAULT_ROLE boolean,\u000a    ROLE_TYPE integer,\u000a    --\u000a    primary key (ID)\u000a)
+\u000aalter table SEC_ROLE add constraint IDX_SEC_ROLE_UNIQ_NAME unique (NAME, DELETE_TS)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_GROUP (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    NAME varchar(255) not null,\u000a    PARENT_ID varchar(36),\u000a    --\u000a    primary key (ID),\u000a    constraint SEC_GROUP_PARENT foreign key (PARENT_ID) references SEC_GROUP(ID)\u000a)
+\u000aalter table SEC_GROUP add constraint IDX_SEC_GROUP_UNIQ_NAME unique (NAME, DELETE_TS)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_GROUP_HIERARCHY (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    --\u000a    GROUP_ID varchar(36),\u000a    PARENT_ID varchar(36),\u000a    HIERARCHY_LEVEL integer,\u000a    --\u000a    primary key (ID),\u000a    constraint SEC_GROUP_HIERARCHY_GROUP foreign key (GROUP_ID) references SEC_GROUP(ID),\u000a    constraint SEC_GROUP_HIERARCHY_PARENT foreign key (PARENT_ID) references SEC_GROUP(ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_USER (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    LOGIN varchar(50) not null,\u000a    LOGIN_LC varchar(50) not null,\u000a    PASSWORD varchar(255),\u000a    NAME varchar(255),\u000a    FIRST_NAME varchar(255),\u000a    LAST_NAME varchar(255),\u000a    MIDDLE_NAME varchar(255),\u000a    POSITION_ varchar(255),\u000a    EMAIL varchar(100),\u000a    LANGUAGE_ varchar(20),\u000a    TIME_ZONE varchar(50),\u000a    TIME_ZONE_AUTO boolean,\u000a    ACTIVE boolean,\u000a    GROUP_ID varchar(36) not null,\u000a    IP_MASK varchar(200),\u000a    CHANGE_PASSWORD_AT_LOGON boolean,\u000a    --\u000a    primary key (ID),\u000a    constraint IDX_SEC_USER_UNIQ_LOGIN unique (LOGIN_LC, DELETE_TS),\u000a    constraint SEC_USER_GROUP foreign key (GROUP_ID) references SEC_GROUP(ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_USER_ROLE (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    USER_ID varchar(36),\u000a    ROLE_ID varchar(36),\u000a    --\u000a    primary key (ID),\u000a    constraint SEC_USER_ROLE_USER foreign key (USER_ID) references SEC_USER(ID),\u000a    constraint SEC_USER_ROLE_ROLE foreign key (ROLE_ID) references SEC_ROLE(ID),\u000a    constraint IDX_SEC_USER_ROLE_UNIQ_ROLE unique (USER_ID, ROLE_ID, DELETE_TS)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_PERMISSION (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    PERMISSION_TYPE integer,\u000a    TARGET varchar(100),\u000a    VALUE integer,\u000a    ROLE_ID varchar(36),\u000a    --\u000a    primary key (ID),\u000a    constraint SEC_PERMISSION_ROLE foreign key (ROLE_ID) references SEC_ROLE(ID),\u000a    constraint IDX_SEC_PERMISSION_UNIQUE unique (ROLE_ID, PERMISSION_TYPE, TARGET, DELETE_TS)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_CONSTRAINT (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    CODE varchar(255),\u000a    CHECK_TYPE varchar(50) default 'db',\u000a    OPERATION_TYPE varchar(50) default 'read',\u000a    ENTITY_NAME varchar(255) not null,\u000a    JOIN_CLAUSE varchar(500),\u000a    WHERE_CLAUSE varchar(1000),\u000a    GROOVY_SCRIPT varchar(1000),\u000a    FILTER_XML varchar(1000),\u000a    IS_ACTIVE boolean default true,\u000a    GROUP_ID varchar(36),\u000a    --\u000a    primary key (ID),\u000a    constraint SEC_CONSTRAINT_GROUP foreign key (GROUP_ID) references SEC_GROUP(ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_SESSION_ATTR (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    NAME varchar(50),\u000a    STR_VALUE varchar(1000),\u000a    DATATYPE varchar(20),\u000a    GROUP_ID varchar(36),\u000a    --\u000a    primary key (ID),\u000a    constraint SEC_SESSION_ATTR_GROUP foreign key (GROUP_ID) references SEC_GROUP(ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_USER_SETTING (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    --\u000a    USER_ID varchar(36),\u000a    CLIENT_TYPE char(1),\u000a    NAME varchar(255),\u000a    VALUE longvarchar,\u000a    --\u000a    primary key (ID),\u000a    constraint SEC_USER_SETTING_USER foreign key (USER_ID) references SEC_USER(ID),\u000a    constraint SEC_USER_SETTING_UNIQ unique (USER_ID, NAME, CLIENT_TYPE)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_USER_SUBSTITUTION (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    USER_ID varchar(36) not null,\u000a    SUBSTITUTED_USER_ID varchar(36) not null,\u000a    START_DATE timestamp,\u000a    END_DATE timestamp,\u000a    --\u000a    primary key (ID),\u000a    constraint FK_SEC_USER_SUBSTITUTION_USER foreign key (USER_ID) references SEC_USER(ID),\u000a    constraint FK_SEC_USER_SUBSTITUTION_SUBSTITUTED_USER foreign key (SUBSTITUTED_USER_ID)\u000a        references SEC_USER(ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_LOGGED_ENTITY (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    --\u000a    NAME varchar(100),\u000a    AUTO boolean,\u000a    MANUAL boolean,\u000a    --\u000a    primary key (ID),\u000a    constraint SEC_LOGGED_ENTITY_UNIQ_NAME unique (NAME)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_LOGGED_ATTR (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    --\u000a    ENTITY_ID varchar(36),\u000a    NAME varchar(50),\u000a    --\u000a    primary key (ID),\u000a    constraint FK_SEC_LOGGED_ATTR_ENTITY foreign key (ENTITY_ID) references SEC_LOGGED_ENTITY(ID),\u000a    constraint SEC_LOGGED_ATTR_UNIQ_NAME unique (ENTITY_ID, NAME)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_ENTITY_LOG (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    --\u000a    EVENT_TS timestamp,\u000a    USER_ID varchar(36),\u000a    CHANGE_TYPE char(1),\u000a    ENTITY varchar(100),\u000a    ENTITY_ID varchar(36),\u000a    CHANGES longvarchar,\u000a    --\u000a    primary key (ID),\u000a    constraint FK_SEC_ENTITY_LOG_USER foreign key (USER_ID) references SEC_USER(ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_ENTITY_LOG_ATTR (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    --\u000a    ITEM_ID varchar(36),\u000a    NAME varchar(50),\u000a    VALUE varchar(1500),\u000a    VALUE_ID varchar(36),\u000a    MESSAGES_PACK varchar(200),\u000a    --\u000a    primary key (ID),\u000a    constraint FK_SEC_ENTITY_LOG_ATTR_ITEM foreign key (ITEM_ID) references SEC_ENTITY_LOG(ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_FILTER (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    COMPONENT varchar(200),\u000a    NAME varchar(255),\u000a    CODE varchar(200),\u000a    XML longvarchar,\u000a    USER_ID varchar(36),\u000a    --\u000a    primary key (ID),\u000a    constraint FK_SEC_FILTER_USER foreign key (USER_ID) references SEC_USER(ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SYS_FOLDER (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    FOLDER_TYPE char(1),\u000a    PARENT_ID varchar(36),\u000a    NAME varchar(100),\u000a    TAB_NAME varchar(100),\u000a    SORT_ORDER integer,\u000a    --\u000a    primary key (ID),\u000a    constraint FK_SYS_FOLDER_PARENT foreign key (PARENT_ID) references SYS_FOLDER(ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SYS_APP_FOLDER (\u000a    FOLDER_ID varchar(36) not null,\u000a    FILTER_COMPONENT varchar(200),\u000a    FILTER_XML varchar(7000),\u000a    VISIBILITY_SCRIPT longvarchar,\u000a    QUANTITY_SCRIPT longvarchar,\u000a    APPLY_DEFAULT boolean,\u000a    --\u000a    primary key (FOLDER_ID),\u000a    constraint FK_SYS_APP_FOLDER_FOLDER foreign key (FOLDER_ID) references SYS_FOLDER(ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_PRESENTATION (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    --\u000a    COMPONENT varchar(200),\u000a    NAME varchar(255),\u000a    XML varchar(7000),\u000a    USER_ID varchar(36),\u000a    IS_AUTO_SAVE boolean,\u000a    --\u000a    primary key (ID),\u000a    constraint SEC_PRESENTATION_USER foreign key (USER_ID) references SEC_USER(ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_SEARCH_FOLDER (\u000a    FOLDER_ID varchar(36) not null,\u000a    FILTER_COMPONENT varchar(200),\u000a    FILTER_XML varchar(7000),\u000a    USER_ID varchar(36),\u000a    PRESENTATION_ID varchar(36),\u000a    APPLY_DEFAULT boolean,\u000a    IS_SET boolean,\u000a    ENTITY_TYPE varchar(50),\u000a    --\u000a    primary key (FOLDER_ID),\u000a    constraint FK_SEC_SEARCH_FOLDER_FOLDER foreign key (FOLDER_ID) references SYS_FOLDER(ID),\u000a    constraint FK_SEC_SEARCH_FOLDER_USER foreign key (USER_ID) references SEC_USER(ID),\u000a    constraint FK_SEC_SEARCH_FOLDER_PRESENTATION foreign key (PRESENTATION_ID)\u000a        references SEC_PRESENTATION(ID)\u000a        on delete set null\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SYS_FTS_QUEUE (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    --\u000a    ENTITY_ID varchar(36),\u000a    STRING_ENTITY_ID varchar(255),\u000a    INT_ENTITY_ID integer,\u000a    LONG_ENTITY_ID bigint,\u000a    ENTITY_NAME varchar(200),\u000a    CHANGE_TYPE char(1),\u000a    SOURCE_HOST varchar(255),\u000a    INDEXING_HOST varchar(255),\u000a    FAKE boolean,\u000a    --\u000a    primary key (ID)\u000a)
+\u000acreate index IDX_SYS_FTS_QUEUE_IDXHOST_CRTS on SYS_FTS_QUEUE (INDEXING_HOST, CREATE_TS)
+\u000a--------------------------------------------------------------------------------------------------------------\u000acreate table SEC_SCREEN_HISTORY (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    USER_ID varchar(36),\u000a    CAPTION varchar(255),\u000a    URL varchar(4000),\u000a    ENTITY_ID varchar(36),\u000a    SUBSTITUTED_USER_ID varchar(36),\u000a    --\u000a    primary key (ID),\u000a    constraint FK_SEC_HISTORY_USER foreign key (USER_ID) references SEC_USER (ID),\u000a    constraint FK_SEC_HISTORY_SUBSTITUTED_USER foreign key (SUBSTITUTED_USER_ID) references SEC_USER (ID)\u000a)
+\u000acreate index IDX_SEC_SCREEN_HIST_SUB_USER on SEC_SCREEN_HISTORY (SUBSTITUTED_USER_ID)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SYS_SENDING_MESSAGE (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    ADDRESS_TO longvarchar,\u000a    ADDRESS_FROM varchar(100),\u000a    CAPTION varchar(500),\u000a    EMAIL_HEADERS varchar(500),\u000a    CONTENT_TEXT longvarchar,\u000a    CONTENT_TEXT_FILE_ID varchar(36),\u000a    DEADLINE timestamp,\u000a    STATUS integer,\u000a    DATE_SENT timestamp,\u000a    ATTEMPTS_COUNT integer,\u000a    ATTEMPTS_MADE integer,\u000a    ATTACHMENTS_NAME longvarchar,\u000a    --\u000a    primary key (ID)\u000a)
+\u000aalter table SYS_SENDING_MESSAGE add constraint FK_SYS_SENDING_MESSAGE_CONTENT_FILE foreign key (CONTENT_TEXT_FILE_ID) references SYS_FILE(ID)
+\u000acreate table SYS_SENDING_ATTACHMENT (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    MESSAGE_ID varchar(36),\u000a    CONTENT longvarbinary,\u000a    CONTENT_FILE_ID varchar(36),\u000a    CONTENT_ID varchar(50),\u000a    NAME varchar(500),\u000a    DISPOSITION varchar(50),\u000a    TEXT_ENCODING varchar(50),\u000a    --\u000a    primary key (ID)\u000a)
+\u000aalter table SYS_SENDING_ATTACHMENT add constraint FK_SYS_SENDING_ATTACHMENT_SENDING_MESSAGE foreign key (MESSAGE_ID) references SYS_SENDING_MESSAGE (ID)
+\u000aalter table SYS_SENDING_ATTACHMENT add constraint FK_SYS_SENDING_ATTACHMENT_CONTENT_FILE foreign key (CONTENT_FILE_ID) references SYS_FILE (ID)
+\u000aCREATE INDEX SYS_SENDING_ATTACHMENT_MESSAGE_IDX\u000a  ON SYS_SENDING_ATTACHMENT(MESSAGE_ID )
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SYS_ENTITY_SNAPSHOT (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    --\u000a    ENTITY_META_CLASS varchar(50),\u000a    ENTITY_ID varchar(36),\u000a    AUTHOR_ID varchar(36) not null,\u000a    VIEW_XML longvarchar,\u000a    SNAPSHOT_XML longvarchar,\u000a    SNAPSHOT_DATE timestamp,\u000a    --\u000a    primary key (ID),\u000a    constraint FK_SYS_ENTITY_SNAPSHOT_AUTHOR_ID foreign key (AUTHOR_ID) references SEC_USER(ID)\u000a)
+\u000a-------------------------------------------------------------------------------------------------------------\u000acreate table SYS_CATEGORY(\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    NAME varchar(255) not null,\u000a    SPECIAL varchar(50),\u000a    ENTITY_TYPE varchar(100) not null,\u000a    IS_DEFAULT boolean,\u000a    DISCRIMINATOR integer,\u000a    --\u000a    primary key (ID)\u000a)
+\u000acreate unique index IDX_SYS_CATEGORY_UNIQ_NAME_ENTITY_TYPE on SYS_CATEGORY (NAME, ENTITY_TYPE, DELETE_TS)
+\u000acreate table SYS_CATEGORY_ATTR(\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    CATEGORY_ENTITY_TYPE varchar(4000),\u000a    NAME varchar(255),\u000a    CODE varchar(100) not null,\u000a    CATEGORY_ID varchar(36) not null,\u000a    ENTITY_CLASS varchar(500),\u000a    DATA_TYPE varchar(200),\u000a    DEFAULT_STRING varchar(4000),\u000a    DEFAULT_INT integer,\u000a    DEFAULT_DOUBLE numeric,\u000a    DEFAULT_DATE date,\u000a    DEFAULT_DATE_IS_CURRENT boolean,\u000a    DEFAULT_BOOLEAN boolean,\u000a    DEFAULT_ENTITY_VALUE varchar(36),\u000a    ENUMERATION varchar(500),\u000a    ORDER_NO integer,\u000a    SCREEN varchar(255),\u000a    REQUIRED boolean,\u000a    LOOKUP boolean,\u000a    TARGET_SCREENS varchar(4000),\u000a    WIDTH varchar(20),\u000a    ROWS_COUNT integer,\u000a    IS_COLLECTION boolean,\u000a    JOIN_CLAUSE varchar(4000),\u000a    WHERE_CLAUSE varchar(4000),\u000a    FILTER_XML longvarchar,\u000a    --\u000a    primary key (ID)\u000a)
+\u000acreate unique index IDX_CAT_ATTR_ENT_TYPE_AND_CODE on SYS_CATEGORY_ATTR (CATEGORY_ENTITY_TYPE, CODE)
+alter table SYS_CATEGORY_ATTR add constraint SYS_CATEGORY_ATTR_CATEGORY_ID foreign key (CATEGORY_ID) references SYS_CATEGORY(ID)
+\u000acreate table SYS_ATTR_VALUE (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    CATEGORY_ATTR_ID varchar(36) not null,\u000a    ENTITY_ID varchar(36),\u000a    STRING_VALUE varchar(4000),\u000a    INTEGER_VALUE integer,\u000a    DOUBLE_VALUE numeric,\u000a    DATE_VALUE date,\u000a    BOOLEAN_VALUE boolean,\u000a    ENTITY_VALUE varchar(36),\u000a    PARENT_ID varchar(36),\u000a    CODE varchar(100),\u000a    --\u000a    primary key (ID)\u000a)
+\u000aalter table SYS_ATTR_VALUE add constraint SYS_ATTR_VALUE_CATEGORY_ATTR_ID foreign key (CATEGORY_ATTR_ID) references SYS_CATEGORY_ATTR(ID)
+\u000aalter table SYS_ATTR_VALUE add constraint SYS_ATTR_VALUE_ATTR_VALUE_PARENT_ID foreign key (PARENT_ID) references SYS_ATTR_VALUE(ID)
+\u000a-------------------------------------------------------------------------------------------------------------\u000acreate table SYS_QUERY_RESULT (\u000a    ID identity not null,\u000a    SESSION_ID varchar(36) not null,\u000a    QUERY_KEY integer not null,\u000a    ENTITY_ID varchar(36),\u000a    STRING_ENTITY_ID varchar(255),\u000a    INT_ENTITY_ID integer,\u000a    LONG_ENTITY_ID bigint,\u000a)
+\u000a--------------------------------------------------------------------------------------------------------------\u000acreate table SYS_JMX_INSTANCE (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    NODE_NAME varchar(255),\u000a    ADDRESS varchar(500) not null,\u000a    LOGIN varchar(50) not null,\u000a    PASSWORD varchar(255) not null,\u000a    --\u000a    primary key (ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate table SEC_REMEMBER_ME (\u000a    ID varchar(36) not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    VERSION integer,\u000a    --\u000a    USER_ID varchar(36) not null,\u000a    TOKEN varchar(32) not null,\u000a    --\u000a    primary key (ID),\u000a    constraint FK_SEC_REMEMBER_ME_USER foreign key (USER_ID) references SEC_USER(ID)\u000a)
+\u000a------------------------------------------------------------------------------------------------------------\u000acreate function NEWID() returns varchar(36)\u000a   return uuid(uuid())
+INSERT INTO SEC_GROUP VALUES('0fa2b1a5-1d68-4d69-9fbd-dff348347f93','2017-02-22 00:50:39.968000',NULL,0,NULL,NULL,NULL,NULL,'Company',NULL)
+COMMIT
+INSERT INTO SEC_USER VALUES('60885987-1b61-4247-94c7-dff348347f93','2017-02-22 00:50:39.969000',NULL,0,NULL,NULL,NULL,NULL,'admin','admin','cc2229d1b8a052423d9e1c9ef0113b850086586a','Administrator',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,TRUE,'0fa2b1a5-1d68-4d69-9fbd-dff348347f93',NULL,NULL)
+COMMIT
+INSERT INTO SEC_USER VALUES('a405db59-e674-4f63-8afe-269dda788fe8','2017-02-22 00:50:39.969000',NULL,0,NULL,NULL,NULL,NULL,'anonymous','anonymous',NULL,'Anonymous',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,TRUE,'0fa2b1a5-1d68-4d69-9fbd-dff348347f93',NULL,NULL)
+COMMIT
+INSERT INTO SEC_ROLE VALUES('0c018061-b26f-4de2-a5be-dff348347f93','2017-02-22 00:50:39.970000',NULL,0,NULL,NULL,NULL,NULL,'Administrators',NULL,NULL,NULL,10)
+COMMIT
+INSERT INTO SEC_USER_ROLE VALUES('c838be0a-96d0-4ef4-a7c0-dff348347f93','2017-02-22 00:50:39.971000',NULL,0,NULL,NULL,NULL,NULL,'60885987-1b61-4247-94c7-dff348347f93','0c018061-b26f-4de2-a5be-dff348347f93')
+COMMIT
+INSERT INTO SEC_FILTER VALUES('b61d18cb-e79a-46f3-b16d-eaf4aebb10dd','2010-03-01 11:14:06.830000','admin',2,'2010-03-01 11:52:53.170000','admin',NULL,NULL,'[sec$User.browse].genericFilter','Search by role',NULL,'<?xml version="1.0" encoding="UTF-8"?>\u000a<filter>\u000a  <and>\u000a    <c name="UrMxpkfMGn" class="com.haulmont.cuba.security.entity.Role" type="CUSTOM" locCaption="Role" entityAlias="u" join="join u.userRoles ur">ur.role.id = :component$genericFilter.UrMxpkfMGn32565\u000a          <param name="component$genericFilter.UrMxpkfMGn32565">NULL</param>\u000a    </c>\u000a  </and>\u000a</filter>','60885987-1b61-4247-94c7-dff348347f93')
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/init/hsql/create-db.sql','2017-02-22 00:50:39.984000',1)
+COMMIT
+-- begin TOTALFIELD_PRODUCT\u000acreate table TOTALFIELD_PRODUCT (\u000a    ID varchar(36) not null,\u000a    VERSION integer not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    NAME varchar(255) not null,\u000a    PRICE decimal(19, 2) not null,\u000a    --\u000a    primary key (ID)\u000a)
+\u000a-- end TOTALFIELD_PRODUCT\u000a-- begin TOTALFIELD_SERVICE\u000acreate table TOTALFIELD_SERVICE (\u000a    ID varchar(36) not null,\u000a    VERSION integer not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    NAME varchar(255) not null,\u000a    HOURLY_PRICE decimal(19, 2) not null,\u000a    STANDARD_ESTIMATION decimal(19, 2),\u000a    --\u000a    primary key (ID)\u000a)
+\u000a-- end TOTALFIELD_SERVICE\u000a-- begin TOTALFIELD_ORDER_PRODUCT_ITEM\u000acreate table TOTALFIELD_ORDER_PRODUCT_ITEM (\u000a    ID varchar(36) not null,\u000a    VERSION integer not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    PRODUCT_ID varchar(36) not null,\u000a    QUANTITY integer not null,\u000a    AMOUNT decimal(19, 2),\u000a    ORDER_ID varchar(36),\u000a    --\u000a    primary key (ID)\u000a)
+\u000a-- end TOTALFIELD_ORDER_PRODUCT_ITEM\u000a-- begin TOTALFIELD_ORDER_SERVICE_ITEM\u000acreate table TOTALFIELD_ORDER_SERVICE_ITEM (\u000a    ID varchar(36) not null,\u000a    VERSION integer not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    SERVICE_ID varchar(36),\u000a    HOURS decimal(19, 2) not null,\u000a    AMOUNT decimal(19, 2),\u000a    ORDER_ID varchar(36),\u000a    --\u000a    primary key (ID)\u000a)
+\u000a-- end TOTALFIELD_ORDER_SERVICE_ITEM\u000a-- begin TOTALFIELD_ORDER\u000acreate table TOTALFIELD_ORDER (\u000a    ID varchar(36) not null,\u000a    VERSION integer not null,\u000a    CREATE_TS timestamp,\u000a    CREATED_BY varchar(50),\u000a    UPDATE_TS timestamp,\u000a    UPDATED_BY varchar(50),\u000a    DELETE_TS timestamp,\u000a    DELETED_BY varchar(50),\u000a    --\u000a    NUMBER_ varchar(255) not null,\u000a    TOTAL_AMOUNT decimal(19, 2),\u000a    --\u000a    primary key (ID)\u000a)
+INSERT INTO SYS_DB_CHANGELOG VALUES('50-total-field/init/hsql/10.create-db.sql','2017-02-22 00:50:40.002000',1)
+COMMIT
+-- begin TOTALFIELD_ORDER_PRODUCT_ITEM\u000aalter table TOTALFIELD_ORDER_PRODUCT_ITEM add constraint FK_TOTALFIELD_ORDER_PRODUCT_ITEM_PRODUCT foreign key (PRODUCT_ID) references TOTALFIELD_PRODUCT(ID)
+\u000aalter table TOTALFIELD_ORDER_PRODUCT_ITEM add constraint FK_TOTALFIELD_ORDER_PRODUCT_ITEM_ORDER foreign key (ORDER_ID) references TOTALFIELD_ORDER(ID)
+\u000acreate index IDX_TOTALFIELD_ORDER_PRODUCT_ITEM_ORDER on TOTALFIELD_ORDER_PRODUCT_ITEM (ORDER_ID)
+\u000acreate index IDX_TOTALFIELD_ORDER_PRODUCT_ITEM_PRODUCT on TOTALFIELD_ORDER_PRODUCT_ITEM (PRODUCT_ID)
+\u000a-- end TOTALFIELD_ORDER_PRODUCT_ITEM\u000a-- begin TOTALFIELD_ORDER_SERVICE_ITEM\u000aalter table TOTALFIELD_ORDER_SERVICE_ITEM add constraint FK_TOTALFIELD_ORDER_SERVICE_ITEM_SERVICE foreign key (SERVICE_ID) references TOTALFIELD_SERVICE(ID)
+\u000aalter table TOTALFIELD_ORDER_SERVICE_ITEM add constraint FK_TOTALFIELD_ORDER_SERVICE_ITEM_ORDER foreign key (ORDER_ID) references TOTALFIELD_ORDER(ID)
+\u000acreate index IDX_TOTALFIELD_ORDER_SERVICE_ITEM_ORDER on TOTALFIELD_ORDER_SERVICE_ITEM (ORDER_ID)
+\u000acreate index IDX_TOTALFIELD_ORDER_SERVICE_ITEM_SERVICE on TOTALFIELD_ORDER_SERVICE_ITEM (SERVICE_ID)
+INSERT INTO SYS_DB_CHANGELOG VALUES('50-total-field/init/hsql/20.create-db.sql','2017-02-22 00:50:40.010000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('50-total-field/init/hsql/30.create-db.sql','2017-02-22 00:50:40.012000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/14/140313-ftsQueueIndexingHost.sql','2017-02-22 00:50:40.041000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/14/140405-changeTypeForSysConfigValue.sql','2017-02-22 00:50:40.042000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/14/140708-addRememberMeTable.sql','2017-02-22 00:50:40.043000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/14/140716-changeSysFileSizeType.sql','2017-02-22 00:50:40.044000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/14/141203-setNotNullSysFileName.sql','2017-02-22 00:50:40.047000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/15/150203-sendingMessageEmailHeaders.sql','2017-02-22 00:50:40.049000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/15/150203-userTimeZone.sql','2017-02-22 00:50:40.050000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/15/150205-addSubstituteUserInScreenHistory.sql','2017-02-22 00:50:40.051000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/15/150226-addIndexInScreenHistory.sql','2017-02-22 00:50:40.053000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/15/150310-alterFilterXml.sql','2017-02-22 00:50:40.054000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/15/150417-runtimePropertiesChanges.sql','2017-02-22 00:50:40.055000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/15/150514-categoryEntityTypeInAttribute.sql','2017-02-22 00:50:40.057000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/15/150630-entityClassToCategoryAttribute.sql','2017-02-22 00:50:40.060000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/15/150805-fakeFtsQueue.sql','2017-02-22 00:50:40.064000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/15/151106-extendScheduledTaskFields.sql','2017-02-22 00:50:40.067000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/15/151116-rowLevelSecurity.sql','2017-02-22 00:50:40.075000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/15/151228-sendingMessagesExtendFields.sql','2017-02-22 00:50:40.078000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/15/1512282-addIsActiveToConstraint.sql','2017-02-22 00:50:40.080000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/16/160322-dropUniqSysScheduledTaskBeanMethodConstraint.sql','2017-02-22 00:50:40.081000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/16/160405-createUniqSysCategory.sql','2017-02-22 00:50:40.082000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/16/160616-addSizeCategoryAttribute.sql','2017-02-22 00:50:40.083000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/16/160626-createIndexOnFinishTimeScheduledExecution.sql','2017-02-22 00:50:40.084000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/16/160725-anonymousLogin.sql','2017-02-22 00:50:40.085000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/16/160916-addEntityIdToFtsQueue.sql','2017-02-22 00:50:40.086000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/16/161024-collectionDynamicAttributes.sql','2017-02-22 00:50:40.087000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/16/161025-sysAttrValueParentConstraint.sql','2017-02-22 00:50:40.088000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/16/161102-setIsCollectionForExistingCategoryAttrs.sql','2017-02-22 00:50:40.089000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/16/161124-FilterXmlInCategoryAttr.sql','2017-02-22 00:50:40.089000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/16/161124-joinAndWhereInCategoryAttr.sql','2017-02-22 00:50:40.090000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/16/270916-addEntityIdToQueryResult.sql','2017-02-22 00:50:40.091000',1)
+COMMIT
+INSERT INTO SYS_DB_CHANGELOG VALUES('10-cuba/update/hsql/16/280916-removeNotNullEntityOnQueryResult.sql','2017-02-22 00:50:40.093000',1)
+COMMIT
+DISCONNECT
+/*C7*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C8*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C9*/SET SCHEMA PUBLIC
+INSERT INTO TOTALFIELD_SERVICE VALUES('382ef8f0-b88a-6c91-f99b-a5e79aa5191d',1,'2017-02-22 00:51:35.206000','admin','2017-02-22 00:51:35.206000',NULL,NULL,NULL,'S1',100.00,2.50)
+COMMIT
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 00:51:38.353000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+INSERT INTO TOTALFIELD_SERVICE VALUES('a13c8718-fe2a-7ad0-263e-7715552b875d',1,'2017-02-22 00:51:44.839000','admin','2017-02-22 00:51:44.839000',NULL,NULL,NULL,'S2',200.00,NULL)
+COMMIT
+INSERT INTO SEC_USER_SETTING VALUES('cd8850a7-4f2e-ec9f-54b0-2dd6451a03f2',NULL,NULL,'60885987-1b61-4247-94c7-dff348347f93','W','totalfield$Service.browse','<?xml version="1.0" encoding="UTF-8"?>\u000a\u000a<settings>\u000a  <components>\u000a    <component name="filter">\u000a      <defaultFilter/>\u000a      <groupBoxExpanded>true</groupBoxExpanded>\u000a    </component>\u000a    <component name="servicesTable">\u000a      <columns>\u000a        <columns id="name" visible="true"/>\u000a        <columns id="hourlyPrice" visible="true"/>\u000a        <columns id="standardEstimation" visible="true"/>\u000a      </columns>\u000a      <groupProperties/>\u000a    </component>\u000a  </components>\u000a</settings>\u000a')
+COMMIT
+INSERT INTO TOTALFIELD_PRODUCT VALUES('02d3a729-6b8b-e1a1-61c1-0e1191d4a711',1,'2017-02-22 00:51:55.703000','admin','2017-02-22 00:51:55.703000',NULL,NULL,NULL,'P1',1000.00)
+COMMIT
+INSERT INTO TOTALFIELD_PRODUCT VALUES('51602b19-fc87-cab7-76d6-2eb712f35372',1,'2017-02-22 00:52:02.672000','admin','2017-02-22 00:52:02.672000',NULL,NULL,NULL,'P2',2000.00)
+COMMIT
+INSERT INTO SEC_USER_SETTING VALUES('9927f1a7-467c-2a48-73b4-6b29c3490cdb',NULL,NULL,'60885987-1b61-4247-94c7-dff348347f93','W','totalfield$Product.browse','<?xml version="1.0" encoding="UTF-8"?>\u000a\u000a<settings>\u000a  <components>\u000a    <component name="filter">\u000a      <defaultFilter/>\u000a      <groupBoxExpanded>true</groupBoxExpanded>\u000a    </component>\u000a    <component name="productsTable">\u000a      <columns>\u000a        <columns id="name" visible="true"/>\u000a        <columns id="price" visible="true"/>\u000a      </columns>\u000a      <groupProperties/>\u000a    </component>\u000a  </components>\u000a</settings>\u000a')
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 00:52:38.352000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 00:53:38.352000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 00:54:38.353000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 00:55:38.353000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+INSERT INTO SEC_USER_SETTING VALUES('193f14c0-3120-5a08-af0d-25037e03e519',NULL,NULL,'60885987-1b61-4247-94c7-dff348347f93','W','totalfield$Order.edit','<?xml version="1.0" encoding="UTF-8"?>\u000a\u000a<settings>\u000a  <components>\u000a    <component name="servicesBox">\u000a      <groupBox expanded="true"/>\u000a    </component>\u000a    <component name="servicesTable">\u000a      <columns>\u000a        <columns id="service" visible="true"/>\u000a        <columns id="hours" visible="true"/>\u000a        <columns id="amount" visible="true"/>\u000a      </columns>\u000a    </component>\u000a    <component name="productsBox">\u000a      <groupBox expanded="true"/>\u000a    </component>\u000a    <component name="productsTable">\u000a      <columns>\u000a        <columns id="product" width="451" visible="true"/>\u000a        <columns id="quantity" width="446" visible="true"/>\u000a        <columns id="amount" width="457" visible="true"/>\u000a      </columns>\u000a    </component>\u000a  </components>\u000a</settings>\u000a')
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 00:56:38.356000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 00:57:38.356000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 00:58:38.356000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 00:59:38.357000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:00:38.360000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:01:38.360000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:02:38.360000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SEC_USER_SETTING WHERE ID='193f14c0-3120-5a08-af0d-25037e03e519'
+INSERT INTO SEC_USER_SETTING VALUES('193f14c0-3120-5a08-af0d-25037e03e519',NULL,NULL,'60885987-1b61-4247-94c7-dff348347f93','W','totalfield$Order.edit','<?xml version="1.0" encoding="UTF-8"?>\u000a\u000a<settings> \u000a  <components> \u000a    <component name="servicesBox"> \u000a      <groupBox expanded="true"/>\u000a    </component>  \u000a    <component name="servicesTable"> \u000a      <columns>\u000a        <columns id="service" visible="true"/>\u000a        <columns id="hours" visible="true"/>\u000a        <columns id="amount" visible="true"/>\u000a      </columns>\u000a    </component>  \u000a    <component name="productsBox"> \u000a      <groupBox expanded="true"/>\u000a    </component>  \u000a    <component name="productsTable"> \u000a      <columns>\u000a        <columns id="product" width="451" visible="true"/>\u000a        <columns id="quantity" width="446" visible="true"/>\u000a        <columns id="amount" width="457" visible="true"/>\u000a      </columns>\u000a    </component> \u000a  </components> \u000a</settings>\u000a')
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:03:38.360000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:04:38.362000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:05:52.609000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:06:52.609000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:07:52.609000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+INSERT INTO SEC_USER_SETTING VALUES('a24932dc-9a35-41b0-187d-2f83c53b531d',NULL,NULL,'60885987-1b61-4247-94c7-dff348347f93','W','totalfield$Order.browse','<?xml version="1.0" encoding="UTF-8"?>\u000a\u000a<settings>\u000a  <components>\u000a    <component name="filter">\u000a      <defaultFilter/>\u000a      <groupBoxExpanded>true</groupBoxExpanded>\u000a    </component>\u000a    <component name="ordersTable">\u000a      <columns>\u000a        <columns id="number" visible="true"/>\u000a        <columns id="totalAmount" visible="true"/>\u000a      </columns>\u000a      <groupProperties/>\u000a    </component>\u000a  </components>\u000a</settings>\u000a')
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:08:56.653000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+INSERT INTO TOTALFIELD_ORDER VALUES('1bdc68cf-d8ff-b3b5-c0c1-e75c4e52cae2',1,'2017-02-22 01:09:53.054000','admin','2017-02-22 01:09:53.054000',NULL,NULL,NULL,'1',6850.00)
+INSERT INTO TOTALFIELD_ORDER_PRODUCT_ITEM VALUES('bbfab241-f7c8-1227-cfb8-839ff3f4d449',1,'2017-02-22 01:09:53.054000','admin','2017-02-22 01:09:53.054000',NULL,NULL,NULL,'51602b19-fc87-cab7-76d6-2eb712f35372',3,6000.00,'1bdc68cf-d8ff-b3b5-c0c1-e75c4e52cae2')
+INSERT INTO TOTALFIELD_ORDER_SERVICE_ITEM VALUES('68ef5d56-c5af-d2d5-0133-78630e738652',1,'2017-02-22 01:09:53.054000','admin','2017-02-22 01:09:53.054000',NULL,NULL,NULL,'382ef8f0-b88a-6c91-f99b-a5e79aa5191d',2.50,250.00,'1bdc68cf-d8ff-b3b5-c0c1-e75c4e52cae2')
+INSERT INTO TOTALFIELD_ORDER_SERVICE_ITEM VALUES('bb7b9ccf-3d93-2810-e4c5-49683d784420',1,'2017-02-22 01:09:53.054000','admin','2017-02-22 01:09:53.054000',NULL,NULL,NULL,'a13c8718-fe2a-7ad0-263e-7715552b875d',3.00,600.00,'1bdc68cf-d8ff-b3b5-c0c1-e75c4e52cae2')
+COMMIT
+DELETE FROM SEC_USER_SETTING WHERE ID='193f14c0-3120-5a08-af0d-25037e03e519'
+INSERT INTO SEC_USER_SETTING VALUES('193f14c0-3120-5a08-af0d-25037e03e519',NULL,NULL,'60885987-1b61-4247-94c7-dff348347f93','W','totalfield$Order.edit','<?xml version="1.0" encoding="UTF-8"?>\u000a\u000a<settings> \u000a  <components> \u000a    <component name="servicesBox"> \u000a      <groupBox expanded="true"/>\u000a    </component>  \u000a    <component name="servicesTable"> \u000a      <columns>\u000a        <columns id="service" visible="true"/>\u000a        <columns id="hours" visible="true"/>\u000a        <columns id="amount" visible="true"/>\u000a      </columns>\u000a    </component>  \u000a    <component name="productsBox"> \u000a      <groupBox expanded="true"/>\u000a    </component>  \u000a    <component name="productsTable"> \u000a      <columns>\u000a        <columns id="product" width="139" visible="true"/>\u000a        <columns id="quantity" width="312" visible="true"/>\u000a        <columns id="amount" width="457" visible="true"/>\u000a      </columns>\u000a    </component> \u000a  </components> \u000a</settings>\u000a')
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:09:56.653000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:10:56.655000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:11:56.656000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:12:56.658000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SEC_USER_SETTING WHERE ID='a24932dc-9a35-41b0-187d-2f83c53b531d'
+INSERT INTO SEC_USER_SETTING VALUES('a24932dc-9a35-41b0-187d-2f83c53b531d',NULL,NULL,'60885987-1b61-4247-94c7-dff348347f93','W','totalfield$Order.browse','<?xml version="1.0" encoding="UTF-8"?>\u000a\u000a<settings> \u000a  <components> \u000a    <component name="filter"> \u000a      <defaultFilter/>  \u000a      <groupBoxExpanded>true</groupBoxExpanded> \u000a    </component>  \u000a    <component name="ordersTable"> \u000a      <columns>\u000a        <columns id="number" visible="true"/>\u000a        <columns id="totalAmount" visible="true"/>\u000a      </columns>\u000a      <groupProperties/>\u000a    </component> \u000a  </components> \u000a</settings>\u000a')
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:13:56.659000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+/*C10*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C11*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C12*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C13*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C15*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C14*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C16*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C17*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C9*/DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:14:31.998000',NULL,'localhost:8080/app-core',FALSE,NULL)
+COMMIT
+DISCONNECT
+/*C18*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C19*/SET SCHEMA PUBLIC
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:15:21.960000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SEC_USER_SETTING WHERE ID='cd8850a7-4f2e-ec9f-54b0-2dd6451a03f2'
+INSERT INTO SEC_USER_SETTING VALUES('cd8850a7-4f2e-ec9f-54b0-2dd6451a03f2',NULL,NULL,'60885987-1b61-4247-94c7-dff348347f93','W','totalfield$Service.browse','<?xml version="1.0" encoding="UTF-8"?>\u000a\u000a<settings> \u000a  <components> \u000a    <component name="filter"> \u000a      <defaultFilter/>  \u000a      <groupBoxExpanded>true</groupBoxExpanded> \u000a    </component>  \u000a    <component name="servicesTable"> \u000a      <columns>\u000a        <columns id="name" visible="true"/>\u000a        <columns id="hourlyPrice" visible="true"/>\u000a        <columns id="standardEstimation" visible="true"/>\u000a      </columns>\u000a      <groupProperties/>\u000a    </component> \u000a  </components> \u000a</settings>\u000a')
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:16:21.959000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:17:21.961000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:18:21.963000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:19:21.963000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:20:21.965000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM TOTALFIELD_ORDER WHERE ID='1bdc68cf-d8ff-b3b5-c0c1-e75c4e52cae2'
+INSERT INTO TOTALFIELD_ORDER VALUES('1bdc68cf-d8ff-b3b5-c0c1-e75c4e52cae2',2,'2017-02-22 01:09:53.054000','admin','2017-02-22 01:20:41.399000','admin',NULL,NULL,'1',8850.00)
+INSERT INTO TOTALFIELD_ORDER_PRODUCT_ITEM VALUES('d728b3d5-fc5f-c11e-b039-05494285f8d1',1,'2017-02-22 01:20:41.377000','admin','2017-02-22 01:20:41.377000',NULL,NULL,NULL,'51602b19-fc87-cab7-76d6-2eb712f35372',1,2000.00,'1bdc68cf-d8ff-b3b5-c0c1-e75c4e52cae2')
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 01:20:53.195000',NULL,'localhost:8080/app-core',FALSE,NULL)
+COMMIT
+DISCONNECT
+/*C20*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C21*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C22*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C23*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C25*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C24*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C26*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C27*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C28*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C29*/SET SCHEMA PUBLIC
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:34:04.760000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM TOTALFIELD_ORDER WHERE ID='1bdc68cf-d8ff-b3b5-c0c1-e75c4e52cae2'
+INSERT INTO TOTALFIELD_ORDER VALUES('1bdc68cf-d8ff-b3b5-c0c1-e75c4e52cae2',3,'2017-02-22 01:09:53.054000','admin','2017-02-22 08:34:17.658000','admin',NULL,NULL,'1',9350.00)
+DELETE FROM TOTALFIELD_ORDER_SERVICE_ITEM WHERE ID='68ef5d56-c5af-d2d5-0133-78630e738652'
+INSERT INTO TOTALFIELD_ORDER_SERVICE_ITEM VALUES('68ef5d56-c5af-d2d5-0133-78630e738652',2,'2017-02-22 01:09:53.054000','admin','2017-02-22 08:34:17.658000','admin',NULL,NULL,'382ef8f0-b88a-6c91-f99b-a5e79aa5191d',5.00,500.00,'1bdc68cf-d8ff-b3b5-c0c1-e75c4e52cae2')
+INSERT INTO TOTALFIELD_ORDER_SERVICE_ITEM VALUES('36f22dfa-d7a2-6285-4303-946685db5cf4',1,'2017-02-22 08:34:17.615000','admin','2017-02-22 08:34:17.615000',NULL,NULL,NULL,'382ef8f0-b88a-6c91-f99b-a5e79aa5191d',2.50,250.00,'1bdc68cf-d8ff-b3b5-c0c1-e75c4e52cae2')
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:35:04.761000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:36:04.763000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:37:04.765000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:38:04.768000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:39:04.770000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:40:04.772000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:41:04.771000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:42:04.771000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:43:04.773000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:44:04.780000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:45:04.788000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:46:04.793000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:47:04.796000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:48:04.798000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:49:04.806000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:50:04.812000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:51:04.820000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:52:04.820000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:53:04.822000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:54:04.824000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:55:04.825000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:56:04.825000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:57:04.827000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:58:04.831000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 08:59:04.839000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:00:04.846000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:01:04.850000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:02:04.853000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:03:04.854000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:04:04.859000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:05:04.866000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:06:04.871000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:07:04.875000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:08:04.879000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:09:04.886000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:10:04.890000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:11:04.895000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:12:04.899000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:13:04.902000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:14:04.906000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:15:04.906000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:16:04.906000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:17:04.914000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:18:04.920000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:19:04.924000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:20:04.928000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 09:21:04.933000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:06:29.186000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:12:24.681000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:24:24.138000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:25:24.878000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:26:24.880000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:27:24.882000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:28:24.883000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:29:24.884000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:30:24.886000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:31:24.888000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:32:24.891000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:33:24.892000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:34:24.893000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:35:24.893000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:36:24.894000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:37:24.897000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:38:24.898000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:39:24.900000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:40:24.901000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:41:24.901000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:42:24.901000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:43:24.901000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:44:24.904000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:45:24.904000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:46:24.904000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:47:24.907000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:48:24.909000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:49:24.911000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:50:24.912000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:51:24.913000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:52:24.914000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:53:24.915000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:54:24.915000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:55:24.918000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:56:24.919000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:57:24.919000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:58:24.921000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 10:59:24.920000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:00:24.923000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:01:24.923000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:02:24.923000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:03:24.923000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:04:24.924000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:05:24.925000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:06:24.927000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:07:24.927000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:08:24.927000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:09:24.928000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:10:24.930000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:11:24.931000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:12:24.931000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:13:24.931000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:14:24.932000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:15:24.932000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:16:24.933000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:17:24.933000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:18:24.935000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:19:24.937000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:20:24.938000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:21:24.938000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:22:24.939000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:23:24.941000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:24:24.942000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:25:24.947000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:26:24.949000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:27:24.955000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:28:24.956000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:29:24.959000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:30:24.962000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:31:24.965000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:32:24.969000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:33:24.975000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:34:24.978000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:35:24.979000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:36:24.981000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:37:24.982000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:38:24.982000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:39:24.982000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:40:24.983000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:41:24.986000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:42:24.988000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:43:24.988000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:44:24.990000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:45:24.992000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:46:24.991000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:47:24.991000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:48:24.992000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:49:24.994000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:50:24.994000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:51:24.994000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:52:24.995000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:53:24.995000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:54:24.995000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:55:24.996000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:56:24.998000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:57:24.999000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:58:25.002000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 11:59:25.005000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:00:25.005000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:01:25.007000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:02:25.008000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:03:25.012000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:04:25.017000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:05:25.018000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:06:25.020000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:07:25.020000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:08:25.022000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:09:25.022000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:10:25.024000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:11:25.025000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:12:25.026000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:13:25.027000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:14:25.026000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:15:25.028000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:16:25.029000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:17:25.029000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:18:25.032000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:19:25.032000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:20:25.034000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:21:25.034000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:22:25.040000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:23:25.040000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:24:25.046000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:25:25.051000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:26:25.056000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:27:25.064000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:28:25.068000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:29:25.074000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:30:25.076000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:31:25.081000',NULL,'localhost:8080/app-core',TRUE,NULL)
+COMMIT
+DELETE FROM SYS_SERVER WHERE ID='a7c684b6-cf57-ba89-641e-29be1776830a'
+INSERT INTO SYS_SERVER VALUES('a7c684b6-cf57-ba89-641e-29be1776830a','2017-02-22 00:51:38.353000',NULL,'2017-02-22 12:31:38.606000',NULL,'localhost:8080/app-core',FALSE,NULL)
+COMMIT
+DISCONNECT
