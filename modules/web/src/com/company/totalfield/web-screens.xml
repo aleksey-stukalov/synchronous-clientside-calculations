@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<screen-config xmlns="http://schemas.haulmont.com/cuba/screens.xsd">
+    <include file="com/company/totalfield/screens.xml"/>
+    <screen id="totalfield$Service.browse"
+            template="com/company/totalfield/web/service/service-browse.xml"/>
+    <screen id="totalfield$Service.edit"
+            template="com/company/totalfield/web/service/service-edit.xml"/>
+    <screen id="totalfield$Product.browse"
+            template="com/company/totalfield/web/product/product-browse.xml"/>
+    <screen id="totalfield$Product.edit"
+            template="com/company/totalfield/web/product/product-edit.xml"/>
+    <screen id="totalfield$OrderServiceItem.edit"
+            template="com/company/totalfield/web/orderserviceitem/order-service-item-edit.xml"/>
+    <screen id="totalfield$OrderProductItem.edit"
+            template="com/company/totalfield/web/orderproductitem/order-product-item-edit.xml"/>
+    <screen id="totalfield$Order.browse"
+            template="com/company/totalfield/web/order/order-browse.xml"/>
+    <screen id="totalfield$Order.edit"
+            template="com/company/totalfield/web/order/order-edit.xml"/>
+</screen-config>

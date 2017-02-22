@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://editorCaption"
+        class="com.company.totalfield.web.service.ServiceEdit"
+        datasource="serviceDs"
+        focusComponent="fieldGroup"
+        messagesPack="com.company.totalfield.web.service">
+    <dsContext>
+        <datasource id="serviceDs"
+                    class="com.company.totalfield.entity.Service"
+                    view="_local"/>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="windowActions"
+            spacing="true">
+        <fieldGroup id="fieldGroup"
+                    datasource="serviceDs">
+            <column width="250px">
+                <field id="name"/>
+                <field id="hourlyPrice"/>
+                <field id="standardEstimation"/>
+            </column>
+        </fieldGroup>
+        <frame id="windowActions"
+               screen="editWindowActions"/>
+    </layout>
+</window>

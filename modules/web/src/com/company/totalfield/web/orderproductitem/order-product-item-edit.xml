@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://editorCaption"
+        class="com.company.totalfield.web.orderproductitem.OrderProductItemEdit"
+        datasource="orderProductItemDs"
+        focusComponent="fieldGroup"
+        messagesPack="com.company.totalfield.web.orderproductitem">
+    <dsContext>
+        <datasource id="orderProductItemDs"
+                    class="com.company.totalfield.entity.OrderProductItem"
+                    view="order-product-item-full-view"/>
+        <collectionDatasource id="productsDs"
+                              class="com.company.totalfield.entity.Product"
+                              view="_local">
+            <query>
+                <![CDATA[select e from totalfield$Product e]]>
+            </query>
+        </collectionDatasource>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="windowActions"
+            spacing="true">
+        <fieldGroup id="fieldGroup"
+                    datasource="orderProductItemDs">
+            <column width="250px">
+                <field id="product"
+                       optionsDatasource="productsDs"/>
+                <field id="quantity"/>
+                <field id="amount"
+                       editable="false"/>
+            </column>
+        </fieldGroup>
+        <frame id="windowActions"
+               screen="editWindowActions"/>
+    </layout>
+</window>

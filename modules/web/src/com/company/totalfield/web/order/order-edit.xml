@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://editorCaption"
+        class="com.company.totalfield.web.order.OrderEdit"
+        datasource="orderDs"
+        focusComponent="fieldGroup"
+        messagesPack="com.company.totalfield.web.order">
+    <dsContext>
+        <datasource id="orderDs"
+                    class="com.company.totalfield.entity.Order"
+                    view="order-edit-view">
+            <collectionDatasource id="servicesDs"
+                                  property="services"/>
+            <collectionDatasource id="productsDs"
+                                  property="products"/>
+        </datasource>
+    </dsContext>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="windowActions"
+            spacing="true">
+        <fieldGroup id="fieldGroup"
+                    datasource="orderDs">
+            <column width="250px">
+                <field id="number"/>
+                <field id="totalAmount"
+                       editable="false"/>
+            </column>
+        </fieldGroup>
+        <hbox spacing="true"
+              width="100%">
+            <groupBox id="servicesBox"
+                      caption="msg://com.company.totalfield.entity/Order.services">
+                <table id="servicesTable"
+                       height="200px"
+                       width="100%">
+                    <actions>
+                        <action id="create"/>
+                        <action id="edit"/>
+                        <action id="remove"/>
+                    </actions>
+                    <columns>
+                        <column id="service"/>
+                        <column id="hours"/>
+                        <column id="amount"/>
+                    </columns>
+                    <rows datasource="servicesDs"/>
+                    <buttonsPanel>
+                        <button action="servicesTable.create"/>
+                        <button action="servicesTable.edit"/>
+                        <button action="servicesTable.remove"/>
+                    </buttonsPanel>
+                </table>
+            </groupBox>
+            <groupBox id="productsBox"
+                      caption="msg://com.company.totalfield.entity/Order.products">
+                <table id="productsTable"
+                       height="200px"
+                       width="100%">
+                    <actions>
+                        <action id="create"/>
+                        <action id="edit"/>
+                        <action id="remove"/>
+                    </actions>
+                    <columns>
+                        <column id="product"/>
+                        <column id="quantity"/>
+                        <column id="amount"/>
+                    </columns>
+                    <rows datasource="productsDs"/>
+                    <buttonsPanel>
+                        <button action="productsTable.create"/>
+                        <button action="productsTable.edit"/>
+                        <button action="productsTable.remove"/>
+                    </buttonsPanel>
+                </table>
+            </groupBox>
+        </hbox>
+        <frame id="windowActions"
+               screen="editWindowActions"/>
+    </layout>
+</window>
